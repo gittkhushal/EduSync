@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Teacher Panel{% endblock %}
+
+{% block content %}
+<div class="page-title">🧑‍🏫 Teacher Panel</div>
+<div class="page-subtitle">Welcome, {{ name }} — Manage assignments, materials and student data</div>
+
+<!-- Stats -->
+<div class="stats-grid">
+  <div class="stat-card green">
+    <div class="stat-icon">👨‍🎓</div>
+    <div>
+      <div class="stat-value">{{ total_students }}</div>
+      <div class="stat-label">Total Students</div>
+    </div>
+  </div>
+  <div class="stat-card orange">
+    <div class="stat-icon">📝</div>
+    <div>
+      <div class="stat-value">{{ total_assignments }}</div>
+      <div class="stat-label">Assignments</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📚</div>
+    <div>
+      <div class="stat-value">{{ total_materials }}</div>
+      <div class="stat-label">Study Materials</div>
+    </div>
+  </div>
+</div>
+
+<div class="teacher-grid">
+
+  <!-- Add Assignment -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">➕ Add Assignment</span>
+      <span class="badge badge-orange">Fibonacci Heap</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('add_assignment') }}">
+        <div class="form-group">
+          <label>Subject</label>
+          <select name="subject_id" required>
+            {% for s in subjects %}
+            <option value="{{ s.id }}">{{ s.code }} — {{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Assignment Title</label>
+          <input type="text" name="title" placeholder="e.g. Red-Black Tree Implementation" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea name="description" rows="2" placeholder="Brief description..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Days Until Deadline</label>
+          <input type="number" name="days_left" min="1" max="30" value="7" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Assignment</button>
+      </form>
+      <div class="ds-info" style="margin-top:12px;">
+        Assignment is inserted into Fibonacci Heap with O(1) amortized insert
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Material -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📎 Add Study Material</span>
+      <span class="badge badge-green">Trie Insert</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('add_material') }}">
+        <div class="form-group">
+          <label>Subject</label>
+          <select name="subject_id" required>
+            {% for s in subjects %}
+            <option value="{{ s.id }}">{{ s.code }} — {{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Material Title</label>
+          <input type="text" name="title" placeholder="e.g. Huffman Coding Notes" required>
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select name="type">
+            <option>Notes</option>
+            <option>PDF</option>
+            <option>Assignment</option>
+            <option>Reference</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-success">Upload Material</button>
+      </form>
+      <div class="ds-info" style="margin-top:12px;">
+        Title is inserted into Trie for instant prefix search by students
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Assignments table -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">📋 All Assignments</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table>
+      <thead>
+        <tr><th>Assignment</th><th>Subject</th><th>Days Left</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for a in assignments %}
+        <tr>
+          <td><strong>{{ a.title }}</strong></td>
+          <td><span class="badge badge-gray">{{ a.subject_name }}</span></td>
+          <td>{{ a.days_left }}</td>
+          <td>
+            {% if a.days_left <= 1 %}
+              <span class="badge badge-red">Critical</span>
+            {% elif a.days_left <= 3 %}
+              <span class="badge badge-orange">Urgent</span>
+            {% else %}
+              <span class="badge badge-green">Normal</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

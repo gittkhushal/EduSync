@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Assignments{% endblock %}
+
+{% block content %}
+<div class="page-title">📝 Assignments</div>
+<div class="page-subtitle">Sorted by deadline using Fibonacci Heap (Unit 2)</div>
+
+<!-- Fibonacci Heap info -->
+<div class="ds-info" style="margin-bottom:20px;">
+  <strong>Unit 2 — Fibonacci Heap:</strong> Assignments sorted by nearest deadline.
+  Insert: O(1) amortized &nbsp;|&nbsp; Extract-Min: O(log n) amortized &nbsp;|&nbsp;
+  Better than Binary Heap for decrease-key operations.
+</div>
+
+<!-- Assignment list -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Pending Assignments</span>
+    <span class="badge badge-orange">{{ assignments|length }} Total</span>
+  </div>
+  <div class="card-body">
+    {% for a in assignments %}
+    <div class="assignment-card {{ 'urgent-1' if a.days_left <= 1 else ('urgent-2' if a.days_left <= 3 else '') }}">
+      <div>
+        <div class="assign-title">{{ a.title }}</div>
+        <div class="assign-meta">
+          <span class="badge badge-gray" style="font-family:var(--mono); margin-right:6px;">{{ a.code }}</span>
+          {{ a.subject_name }} &nbsp;·&nbsp; Max Marks: {{ a.max_marks }}
+        </div>
+        {% if a.description %}
+        <div style="font-size:.8rem; color:var(--gray-400); margin-top:5px;">{{ a.description }}</div>
+        {% endif %}
+      </div>
+      <div style="text-align:right; flex-shrink:0;">
+        {% if a.days_left <= 1 %}
+          <span class="badge badge-red">🔴 Due Tomorrow</span>
+        {% elif a.days_left <= 3 %}
+          <span class="badge badge-orange">🟠 {{ a.days_left }} days left</span>
+        {% else %}
+          <span class="badge badge-green">🟢 {{ a.days_left }} days left</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Fibonacci Heap visualization -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">⚡ Fibonacci Heap — Priority Order</span>
+    <span class="badge badge-blue">Unit 2</span>
+  </div>
+  <div class="card-body">
+    <p style="font-size:.85rem; color:var(--gray-600); margin-bottom:14px;">
+      The Fibonacci Heap maintains the minimum element (most urgent assignment) 
+      accessible in O(1). The sorted order below is produced via repeated Extract-Min in O(log n) each.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Priority</th>
+          <th>Assignment</th>
+          <th>Subject Code</th>
+          <th>Days Left</th>
+          <th>Urgency</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in fib_sorted %}
+        <tr>
+          <td><strong>#{{ loop.index }}</strong></td>
+          <td>{{ item.subject }}</td>
+          <td><span class="badge badge-gray" style="font-family:var(--mono);">{{ item.subject_code }}</span></td>
+          <td>{{ item.days }}</td>
+          <td>
+            {% if item.days <= 1 %}
+              <span class="badge badge-red">Critical</span>
+            {% elif item.days <= 3 %}
+              <span class="badge badge-orange">High</span>
+            {% else %}
+              <span class="badge badge-green">Normal</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="ds-info" style="margin-top:16px;">
+      Fibonacci Heap properties: Min accessible in O(1) &nbsp;|&nbsp;
+      Insert O(1) amortized &nbsp;|&nbsp; Extract-Min O(log n) amortized &nbsp;|&nbsp;
+      Decrease-Key O(1) amortized — better than Binary Heap
+    </div>
+  </div>
+</div>
+
+{% endblock %}

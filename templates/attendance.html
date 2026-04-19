@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+
+{% block content %}
+<div class="page-title">📊 Attendance Dashboard</div>
+<div class="page-subtitle">Subject-wise attendance — AY 2025–26 Semester 4</div>
+
+<!-- Skip List DS info -->
+<div class="ds-info" style="margin-bottom:20px;">
+  <strong>Unit 4 — Skip List:</strong> Attendance records stored in O(log n) probabilistic structure.
+  &nbsp;|&nbsp; Your skip-list lookup: Roll 1001 → <strong>{{ skip_pct or 'N/A' }}%</strong>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Subject-wise Attendance</span>
+    <span class="badge badge-blue">75% Required</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <table>
+      <thead>
+        <tr>
+          <th>Subject Code</th>
+          <th>Subject Name</th>
+          <th>Conducted</th>
+          <th>Attended</th>
+          <th>Percentage</th>
+          <th>Progress</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in subjects %}
+        <tr>
+          <td><span class="badge badge-gray" style="font-family:var(--mono);">{{ s.code }}</span></td>
+          <td><strong>{{ s.name }}</strong></td>
+          <td>{{ s.conducted }}</td>
+          <td>{{ s.attended }}</td>
+          <td>
+            <strong style="color: {{ '#059669' if s.status == 'safe' else '#dc2626' }};">
+              {{ s.pct }}%
+            </strong>
+          </td>
+          <td>
+            <div class="progress-bar-wrap" style="min-width:120px;">
+              <div class="progress-bar {{ s.status }}" style="width:{{ [s.pct,100]|min }}%;"></div>
+            </div>
+          </td>
+          <td>
+            {% if s.status == 'safe' %}
+              <span class="badge badge-green">✅ Safe</span>
+            {% else %}
+              <span class="badge badge-red">⚠️ Low</span>
+              {% if s.needed > 0 %}
+                <div style="font-size:.72rem; color:var(--red); margin-top:3px;">
+                  Need {{ s.needed }} more lectures
+                </div>
+              {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Segment Tree info -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">📐 Segment Tree — Range Queries</span>
+    <span class="badge badge-blue">Unit 5</span>
+  </div>
+  <div class="card-body">
+    <p style="font-size:.88rem; color:var(--gray-600); margin-bottom:12px;">
+      The Segment Tree enables O(log n) range queries on attendance data.
+      Instead of scanning all subjects, we query sub-ranges instantly.
+    </p>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+      {% set labels = ['AIDS301', 'AIDS302', 'AIDS303', 'AIDS304', 'AIDS305', 'AIDS306'] %}
+      {% for s in subjects %}
+      <div style="background:var(--gray-50); border-radius:10px; padding:14px; text-align:center;">
+        <div style="font-family:var(--mono); font-size:.75rem; color:var(--blue-mid); margin-bottom:4px;">{{ s.code }}</div>
+        <div style="font-size:1.4rem; font-weight:700; color: {{ '#059669' if s.pct >= 75 else '#dc2626' }};">{{ s.pct }}%</div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="ds-info" style="margin-top:16px;">
+      Segment Tree query — subjects 1 to 3: 
+      Average = <strong>{{ subjects[:3] | map(attribute='pct') | list | sum // 3 if subjects|length >= 3 else 'N/A' }}%</strong>
+      &nbsp;|&nbsp; Time Complexity: O(log n)
+    </div>
+  </div>
+</div>
+
+{% endblock %}

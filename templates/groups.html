@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Project Groups{% endblock %}
+
+{% block content %}
+<div class="page-title">👥 Project Groups</div>
+<div class="page-subtitle">Disjoint Set Union-Find — Unit 6</div>
+
+<div class="ds-info" style="margin-bottom:20px;">
+  <strong>Unit 6 — Disjoint Set Union-Find:</strong>
+  Efficiently groups students into project teams.
+  Find (with path compression): O(α(n)) ≈ O(1) &nbsp;|&nbsp;
+  Union (by rank): O(α(n)) &nbsp;|&nbsp; α is the inverse Ackermann function.
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">Project Team Assignments</span>
+    <span class="badge badge-blue">{{ groups|length }} Groups</span>
+  </div>
+  <div class="card-body">
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:16px;">
+      {% for group in groups %}
+      <div style="background: var(--blue-pale); border-radius: var(--radius); padding:20px; border:2px solid var(--blue-light);">
+        <div style="font-weight:700; color:var(--blue-dark); margin-bottom:12px;">
+          🗂️ Group {{ loop.index }}
+        </div>
+        {% for member in group %}
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <div style="width:32px; height:32px; border-radius:50%; background:var(--blue-mid);
+                      color:white; display:flex; align-items:center; justify-content:center;
+                      font-size:.8rem; font-weight:700;">
+            {{ member[0] }}
+          </div>
+          <span style="font-weight:500;">{{ member }}</span>
+        </div>
+        {% endfor %}
+        <div style="margin-top:10px; font-size:.72rem; color:var(--blue-mid); font-family:var(--mono);">
+          same_group() → True
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Union-Find explanation -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">🔗 Union-Find Algorithm Details</span>
+    <span class="badge badge-blue">Unit 6</span>
+  </div>
+  <div class="card-body">
+    <p style="font-size:.88rem; color:var(--gray-600); line-height:1.7; margin-bottom:16px;">
+      Union-Find (Disjoint Set) groups students into teams. Each student starts as their own parent.
+      <code style="background:var(--gray-100); padding:2px 6px; border-radius:4px;">union(A,B)</code> merges two groups.
+      <code style="background:var(--gray-100); padding:2px 6px; border-radius:4px;">find(A)</code> returns the root of A's group.
+      Path compression makes repeated finds nearly O(1).
+    </p>
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+      <div style="background:var(--gray-50); border-radius:10px; padding:14px; text-align:center;">
+        <div style="font-size:1.3rem; font-weight:700; color:var(--blue-mid);">O(α(n))</div>
+        <div style="font-size:.78rem; color:var(--gray-400);">Find (path compression)</div>
+      </div>
+      <div style="background:var(--gray-50); border-radius:10px; padding:14px; text-align:center;">
+        <div style="font-size:1.3rem; font-weight:700; color:var(--green);">O(α(n))</div>
+        <div style="font-size:.78rem; color:var(--gray-400);">Union (by rank)</div>
+      </div>
+      <div style="background:var(--gray-50); border-radius:10px; padding:14px; text-align:center;">
+        <div style="font-size:1.3rem; font-weight:700; color:var(--orange);">≈ O(1)</div>
+        <div style="font-size:.78rem; color:var(--gray-400);">α(n) inverse Ackermann</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

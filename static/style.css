@@ -1,0 +1,630 @@
+/* ═══════════════════════════════════════════════
+   EduSync — Unified College Portal
+   Design: Clean card-grid inspired by VIERP
+   Color: Deep blue institutional theme
+   ═══════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── Variables ──────────────────────────────────── */
+:root {
+  --blue-dark  : #1a3a6b;
+  --blue-mid   : #2563eb;
+  --blue-light : #dbeafe;
+  --blue-pale  : #eff6ff;
+  --green      : #059669;
+  --red        : #dc2626;
+  --orange     : #d97706;
+  --white      : #ffffff;
+  --gray-50    : #f8fafc;
+  --gray-100   : #f1f5f9;
+  --gray-200   : #e2e8f0;
+  --gray-400   : #94a3b8;
+  --gray-600   : #475569;
+  --gray-800   : #1e293b;
+  --shadow-sm  : 0 1px 3px rgba(0,0,0,.08);
+  --shadow-md  : 0 4px 16px rgba(26,58,107,.12);
+  --shadow-lg  : 0 8px 32px rgba(26,58,107,.18);
+  --radius     : 14px;
+  --radius-sm  : 8px;
+  --font       : 'Outfit', sans-serif;
+  --mono       : 'JetBrains Mono', monospace;
+}
+
+/* ── Reset ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 15px; scroll-behavior: smooth; }
+
+body {
+  font-family : var(--font);
+  background  : var(--gray-50);
+  color       : var(--gray-800);
+  min-height  : 100vh;
+}
+
+/* ── Top Navbar ─────────────────────────────────── */
+.navbar {
+  background    : var(--blue-dark);
+  color         : var(--white);
+  display       : flex;
+  align-items   : center;
+  justify-content: space-between;
+  padding       : 0 28px;
+  height        : 58px;
+  position      : sticky;
+  top           : 0;
+  z-index       : 100;
+  box-shadow    : 0 2px 12px rgba(0,0,0,.2);
+}
+
+.navbar-brand {
+  display     : flex;
+  align-items : center;
+  gap         : 10px;
+  font-size   : 1.2rem;
+  font-weight : 700;
+  letter-spacing: .5px;
+  text-decoration: none;
+  color       : var(--white);
+}
+
+.navbar-brand .logo-icon {
+  width           : 34px;
+  height          : 34px;
+  background      : linear-gradient(135deg, #3b82f6, #60a5fa);
+  border-radius   : 8px;
+  display         : flex;
+  align-items     : center;
+  justify-content : center;
+  font-size       : 1.1rem;
+}
+
+.navbar-right {
+  display    : flex;
+  align-items: center;
+  gap        : 16px;
+}
+
+.navbar-user {
+  font-size  : .88rem;
+  opacity    : .85;
+}
+
+.navbar a {
+  color          : rgba(255,255,255,.82);
+  text-decoration: none;
+  font-size      : .88rem;
+  transition     : color .2s;
+}
+.navbar a:hover { color: var(--white); }
+
+.btn-logout {
+  background    : rgba(255,255,255,.15);
+  border        : 1px solid rgba(255,255,255,.25);
+  color         : var(--white) !important;
+  padding       : 5px 14px;
+  border-radius : 20px;
+  font-size     : .82rem;
+  cursor        : pointer;
+  transition    : background .2s;
+}
+.btn-logout:hover { background: rgba(255,255,255,.25); }
+
+/* ── Sidebar + Layout ───────────────────────────── */
+.layout {
+  display  : flex;
+  min-height: calc(100vh - 58px);
+}
+
+.sidebar {
+  width          : 220px;
+  background     : var(--white);
+  border-right   : 1px solid var(--gray-200);
+  padding        : 20px 0;
+  flex-shrink    : 0;
+  position       : sticky;
+  top            : 58px;
+  height         : calc(100vh - 58px);
+  overflow-y     : auto;
+}
+
+.sidebar-section {
+  padding    : 0 14px;
+  margin-bottom: 6px;
+}
+
+.sidebar-label {
+  font-size   : .7rem;
+  font-weight : 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color       : var(--gray-400);
+  padding     : 14px 8px 4px;
+}
+
+.sidebar a {
+  display       : flex;
+  align-items   : center;
+  gap           : 10px;
+  padding       : 9px 12px;
+  border-radius : var(--radius-sm);
+  color         : var(--gray-600);
+  text-decoration: none;
+  font-size     : .88rem;
+  font-weight   : 500;
+  transition    : all .2s;
+  margin-bottom : 2px;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+  background : var(--blue-pale);
+  color      : var(--blue-mid);
+}
+
+.sidebar a .icon { font-size: 1rem; }
+
+/* ── Main Content ───────────────────────────────── */
+.main {
+  flex      : 1;
+  padding   : 28px;
+  overflow-x: hidden;
+}
+
+.page-title {
+  font-size  : 1.4rem;
+  font-weight: 700;
+  color      : var(--blue-dark);
+  margin-bottom: 6px;
+}
+
+.page-subtitle {
+  font-size : .85rem;
+  color     : var(--gray-400);
+  margin-bottom: 24px;
+}
+
+/* ── Stat Cards (dashboard top) ─────────────────── */
+.stats-grid {
+  display              : grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap                  : 16px;
+  margin-bottom        : 28px;
+}
+
+.stat-card {
+  background   : var(--white);
+  border-radius: var(--radius);
+  padding      : 20px;
+  box-shadow   : var(--shadow-sm);
+  display      : flex;
+  align-items  : center;
+  gap          : 16px;
+  border-left  : 4px solid var(--blue-mid);
+  transition   : transform .2s, box-shadow .2s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.stat-card.green  { border-left-color: var(--green); }
+.stat-card.orange { border-left-color: var(--orange); }
+.stat-card.red    { border-left-color: var(--red); }
+
+.stat-icon {
+  font-size    : 1.8rem;
+  width        : 48px;
+  height       : 48px;
+  border-radius: 12px;
+  display      : flex;
+  align-items  : center;
+  justify-content: center;
+  background   : var(--blue-pale);
+}
+.stat-card.green  .stat-icon { background: #d1fae5; }
+.stat-card.orange .stat-icon { background: #fef3c7; }
+.stat-card.red    .stat-icon { background: #fee2e2; }
+
+.stat-value { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+.stat-label { font-size: .8rem; color: var(--gray-400); margin-top: 3px; }
+
+/* ── Module Grid (like VIERP) ───────────────────── */
+.module-grid {
+  display              : grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap                  : 16px;
+  margin-bottom        : 28px;
+}
+
+.module-card {
+  background     : var(--white);
+  border-radius  : var(--radius);
+  padding        : 24px 16px 20px;
+  text-align     : center;
+  box-shadow     : var(--shadow-sm);
+  cursor         : pointer;
+  text-decoration: none;
+  color          : var(--gray-800);
+  transition     : all .25s;
+  border         : 2px solid transparent;
+  display        : block;
+}
+
+.module-card:hover {
+  border-color   : var(--blue-mid);
+  box-shadow     : var(--shadow-md);
+  transform      : translateY(-3px);
+  color          : var(--blue-dark);
+}
+
+.module-icon-wrap {
+  width          : 64px;
+  height         : 64px;
+  margin         : 0 auto 12px;
+  border-radius  : 50%;
+  background     : linear-gradient(135deg, var(--blue-light), #bfdbfe);
+  display        : flex;
+  align-items    : center;
+  justify-content: center;
+  font-size      : 1.8rem;
+  box-shadow     : 0 4px 12px rgba(37,99,235,.15);
+}
+
+.module-label {
+  font-size  : .85rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* ── Cards / Panels ─────────────────────────────── */
+.card {
+  background   : var(--white);
+  border-radius: var(--radius);
+  box-shadow   : var(--shadow-sm);
+  overflow     : hidden;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  padding       : 16px 20px;
+  border-bottom : 1px solid var(--gray-200);
+  display       : flex;
+  align-items   : center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-size  : 1rem;
+  font-weight: 600;
+  color      : var(--blue-dark);
+}
+
+.card-body { padding: 20px; }
+
+/* ── Tables ─────────────────────────────────────── */
+table {
+  width          : 100%;
+  border-collapse: collapse;
+  font-size      : .88rem;
+}
+
+thead tr { background: var(--gray-50); }
+
+th {
+  padding    : 11px 14px;
+  text-align : left;
+  font-weight: 600;
+  color      : var(--gray-600);
+  font-size  : .78rem;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  border-bottom : 2px solid var(--gray-200);
+}
+
+td {
+  padding    : 12px 14px;
+  border-bottom: 1px solid var(--gray-100);
+  color      : var(--gray-800);
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--gray-50); }
+
+/* ── Progress Bars ──────────────────────────────── */
+.progress-bar-wrap {
+  background   : var(--gray-100);
+  border-radius: 20px;
+  height       : 8px;
+  overflow     : hidden;
+  min-width    : 100px;
+}
+
+.progress-bar {
+  height       : 8px;
+  border-radius: 20px;
+  background   : var(--blue-mid);
+  transition   : width .5s ease;
+}
+.progress-bar.safe   { background: var(--green); }
+.progress-bar.danger { background: var(--red); }
+.progress-bar.warn   { background: var(--orange); }
+
+/* ── Badges ─────────────────────────────────────── */
+.badge {
+  display      : inline-flex;
+  align-items  : center;
+  padding      : 3px 10px;
+  border-radius: 20px;
+  font-size    : .75rem;
+  font-weight  : 600;
+}
+
+.badge-blue   { background: var(--blue-pale);  color: var(--blue-mid); }
+.badge-green  { background: #d1fae5;            color: var(--green); }
+.badge-red    { background: #fee2e2;            color: var(--red); }
+.badge-orange { background: #fef3c7;            color: var(--orange); }
+.badge-gray   { background: var(--gray-100);   color: var(--gray-600); }
+
+/* ── Urgency indicators for assignments ─────────── */
+.urgency-1 { border-left: 4px solid var(--red); }
+.urgency-2 { border-left: 4px solid var(--orange); }
+.urgency-3 { border-left: 4px solid var(--blue-mid); }
+
+/* ── Forms ──────────────────────────────────────── */
+.form-group { margin-bottom: 16px; }
+
+label {
+  display    : block;
+  font-size  : .83rem;
+  font-weight: 600;
+  color      : var(--gray-600);
+  margin-bottom: 6px;
+}
+
+input[type=text],
+input[type=password],
+input[type=number],
+select,
+textarea {
+  width        : 100%;
+  padding      : 10px 14px;
+  border       : 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  font-family  : var(--font);
+  font-size    : .9rem;
+  color        : var(--gray-800);
+  background   : var(--white);
+  transition   : border-color .2s, box-shadow .2s;
+  outline      : none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--blue-mid);
+  box-shadow  : 0 0 0 3px rgba(37,99,235,.1);
+}
+
+/* ── Buttons ─────────────────────────────────────── */
+.btn {
+  display       : inline-flex;
+  align-items   : center;
+  gap           : 6px;
+  padding       : 9px 20px;
+  border-radius : var(--radius-sm);
+  font-family   : var(--font);
+  font-size     : .88rem;
+  font-weight   : 600;
+  cursor        : pointer;
+  border        : none;
+  transition    : all .2s;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background : var(--blue-mid);
+  color      : var(--white);
+}
+.btn-primary:hover { background: #1d4ed8; box-shadow: var(--shadow-md); }
+
+.btn-success {
+  background : var(--green);
+  color      : var(--white);
+}
+.btn-success:hover { background: #047857; }
+
+.btn-outline {
+  background   : var(--white);
+  color        : var(--blue-mid);
+  border       : 1.5px solid var(--blue-mid);
+}
+.btn-outline:hover { background: var(--blue-pale); }
+
+.btn-sm { padding: 6px 14px; font-size: .8rem; }
+
+/* ── Login Page ─────────────────────────────────── */
+.login-wrapper {
+  min-height    : 100vh;
+  display       : flex;
+  align-items   : center;
+  justify-content: center;
+  background    : linear-gradient(135deg, #1a3a6b 0%, #2563eb 60%, #3b82f6 100%);
+}
+
+.login-card {
+  background   : var(--white);
+  border-radius: 20px;
+  padding      : 44px 40px;
+  width        : 400px;
+  box-shadow   : 0 20px 60px rgba(0,0,0,.25);
+}
+
+.login-logo {
+  text-align : center;
+  margin-bottom: 28px;
+}
+
+.login-logo .logo-big {
+  font-size  : 2.2rem;
+  font-weight: 800;
+  color      : var(--blue-dark);
+  letter-spacing: 1px;
+}
+
+.login-logo .logo-sub {
+  font-size : .8rem;
+  color     : var(--gray-400);
+  margin-top: 4px;
+}
+
+.login-logo .logo-icon-big {
+  width          : 70px;
+  height         : 70px;
+  background     : linear-gradient(135deg, var(--blue-mid), #60a5fa);
+  border-radius  : 18px;
+  display        : flex;
+  align-items    : center;
+  justify-content: center;
+  font-size      : 2rem;
+  margin         : 0 auto 12px;
+  box-shadow     : 0 8px 24px rgba(37,99,235,.35);
+}
+
+.login-hint {
+  background   : var(--blue-pale);
+  border-radius: var(--radius-sm);
+  padding      : 12px 14px;
+  font-size    : .8rem;
+  color        : var(--gray-600);
+  margin-bottom: 18px;
+  line-height  : 1.6;
+  font-family  : var(--mono);
+}
+
+.error-msg {
+  background   : #fee2e2;
+  color        : var(--red);
+  border-radius: var(--radius-sm);
+  padding      : 10px 14px;
+  font-size    : .85rem;
+  margin-bottom: 16px;
+  font-weight  : 500;
+}
+
+/* ── DS Info Box ─────────────────────────────────── */
+.ds-info {
+  background   : linear-gradient(135deg, var(--blue-pale), #e0f2fe);
+  border-radius: var(--radius-sm);
+  padding      : 12px 16px;
+  font-size    : .8rem;
+  color        : var(--blue-dark);
+  border-left  : 3px solid var(--blue-mid);
+  margin-top   : 16px;
+  font-family  : var(--mono);
+}
+
+.ds-info strong { font-weight: 700; }
+
+/* ── Notice Board ────────────────────────────────── */
+.notice-item {
+  padding      : 12px 0;
+  border-bottom: 1px solid var(--gray-100);
+  display      : flex;
+  gap          : 12px;
+  align-items  : flex-start;
+}
+.notice-item:last-child { border-bottom: none; }
+
+.notice-dot {
+  width        : 8px;
+  height       : 8px;
+  border-radius: 50%;
+  background   : var(--blue-mid);
+  margin-top   : 6px;
+  flex-shrink  : 0;
+}
+
+/* ── Search Box ─────────────────────────────────── */
+.search-row {
+  display  : flex;
+  gap      : 10px;
+  margin-bottom: 20px;
+}
+
+.search-row input { flex: 1; }
+
+/* ── Assignment Cards ────────────────────────────── */
+.assignment-card {
+  background   : var(--white);
+  border-radius: var(--radius);
+  padding      : 16px 20px;
+  margin-bottom: 12px;
+  box-shadow   : var(--shadow-sm);
+  display      : flex;
+  justify-content: space-between;
+  align-items  : center;
+  border-left  : 4px solid var(--blue-mid);
+}
+
+.assignment-card.urgent-1 { border-left-color: var(--red); }
+.assignment-card.urgent-2 { border-left-color: var(--orange); }
+
+.assign-title { font-weight: 600; margin-bottom: 4px; }
+.assign-meta  { font-size: .8rem; color: var(--gray-400); }
+
+/* ── Material cards ─────────────────────────────── */
+.material-grid {
+  display              : grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap                  : 14px;
+}
+
+.material-card {
+  background   : var(--white);
+  border-radius: var(--radius);
+  padding      : 16px;
+  box-shadow   : var(--shadow-sm);
+  border-top   : 3px solid var(--blue-mid);
+  transition   : transform .2s, box-shadow .2s;
+}
+.material-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+.material-card .mat-type {
+  font-size  : .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color      : var(--blue-mid);
+  margin-bottom: 6px;
+}
+
+.material-card .mat-title { font-weight: 600; font-size: .9rem; margin-bottom: 4px; }
+.material-card .mat-subj  { font-size: .78rem; color: var(--gray-400); }
+
+/* ── Teacher Panel ──────────────────────────────── */
+.teacher-grid {
+  display              : grid;
+  grid-template-columns: 1fr 1fr;
+  gap                  : 20px;
+}
+
+/* ── Scrollbar ──────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--gray-100); }
+::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 3px; }
+
+/* ── Animations ─────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.main > * { animation: fadeInUp .3s ease both; }
+.main > *:nth-child(2) { animation-delay: .05s; }
+.main > *:nth-child(3) { animation-delay: .10s; }
+.main > *:nth-child(4) { animation-delay: .15s; }
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main    { padding: 16px; }
+  .teacher-grid { grid-template-columns: 1fr; }
+  .login-card   { width: 95%; padding: 28px 20px; }
+}

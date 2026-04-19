@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduSync — Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="login-wrapper">
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <div class="logo-icon-big">🎓</div>
+      <div class="logo-big">EduSync</div>
+      <div class="logo-sub">Vishwakarma Institute of Technology, Pune<br>
+        <strong>Unified ERP + LMS Portal</strong>
+      </div>
+    </div>
+
+    <!-- Error -->
+    {% if error %}
+    <div class="error-msg">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <!-- Form -->
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" placeholder="Enter your username" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">
+        Login to EduSync →
+      </button>
+    </form>
+
+    <!-- Demo credentials hint -->
+    <div class="login-hint">
+      🎓 Student — username: <strong>student</strong> / pass: <strong>123</strong><br>
+      🧑‍🏫 Teacher — username: <strong>teacher</strong> / pass: <strong>123</strong>
+    </div>
+
+    <div style="text-align:center; font-size:.75rem; color:var(--gray-400); margin-top:12px;">
+      Merging VIERP + VOLP · Powered by Advanced Data Structures
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
