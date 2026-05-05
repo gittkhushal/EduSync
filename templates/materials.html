@@ -3,105 +3,103 @@
 
 {% block content %}
 <div class="page-title">📚 Study Materials</div>
-<div class="page-subtitle">Search using Trie prefix search — Unit 3</div>
+<div class="page-subtitle">Browse and search all study materials uploaded by your teacher</div>
 
-<!-- Trie info -->
-<div class="ds-info" style="margin-bottom:20px;">
-  <strong>Unit 3 — Trie (Compressed Trie):</strong> 
-  Type any prefix to search materials in O(L) time where L = prefix length.
-  Supports autocomplete-style instant search — same technique used in Google Search.
+<!-- Algorithm Info Feature -->
+<div class="ds-info-bar" id="ds-info-mat" style="display:none;">
+  <div class="ds-info-inner">
+    <span class="ds-info-icon">🔤</span>
+    <div>
+      <strong>Powered by Trie (Prefix Tree)</strong> —
+      The search bar uses a Trie for real-time prefix matching. Every character you type traverses
+      the tree in O(k) where k is the length of your query — making search near-instant even with thousands of materials.
+      <span style="opacity:.6; font-size:.8rem; margin-left:8px;">Search/Insert: O(k)</span>
+    </div>
+    <button onclick="document.getElementById('ds-info-mat').style.display='none'" class="ds-info-close">✕</button>
+  </div>
+</div>
+<div style="text-align:right; margin-bottom:10px;">
+  <button class="btn btn-outline btn-sm" onclick="document.getElementById('ds-info-mat').style.display='block'">
+    ⚡ How does this work?
+  </button>
 </div>
 
-<!-- Search bar -->
 <div class="card">
   <div class="card-header">
-    <span class="card-title">🔍 Search Materials (Trie Prefix Search)</span>
+    <span class="card-title">🔍 Search Materials</span>
+    <span class="badge badge-blue">{{ results|length }} materials available</span>
   </div>
   <div class="card-body">
     <form method="POST" action="{{ url_for('materials') }}">
       <div class="search-row">
-        <input type="text" name="query" placeholder="Type subject or material name... (try 'da', 'python', 'avl')"
+        <input type="text" name="query"
+               placeholder="Search by subject or material name… (try 'python', 'avl', 'sql')"
                value="{{ query }}" autofocus>
         <button type="submit" class="btn btn-primary">Search</button>
+        {% if query %}
         <a href="{{ url_for('materials') }}" class="btn btn-outline">Clear</a>
+        {% endif %}
       </div>
     </form>
-
     {% if query %}
-    <div style="font-size:.85rem; color:var(--gray-400); margin-top:4px;">
-      Trie prefix search for "<strong>{{ query }}</strong>" → {{ results|length }} result(s) found
+    <div style="font-size:.85rem; color:var(--gray-400); margin-top:6px;">
+      Showing results for "<strong>{{ query }}</strong>" — {{ results|length }} found
     </div>
     {% endif %}
   </div>
 </div>
 
-<!-- Results -->
 {% if results %}
-<div class="card">
-  <div class="card-header">
-    <span class="card-title">
-      {% if query %}Search Results{% else %}All Materials{% endif %}
-    </span>
-    <span class="badge badge-blue">{{ results|length }} items</span>
-  </div>
-  <div class="card-body">
-    <div class="material-grid">
-      {% for m in results %}
-      <div class="material-card">
-        <div class="mat-type">
-          {% if m.type == 'PDF' %}📄{% elif m.type == 'Assignment' %}📝{% else %}📋{% endif %}
-          {{ m.type }}
-        </div>
-        <div class="mat-title">{{ m.title }}</div>
-        <div class="mat-subj">{{ m.subject_name }} — {{ m.code }}</div>
-        <div style="margin-top:10px;">
-          <a href="#" class="btn btn-outline btn-sm">View →</a>
+
+{% set seen_subjects = [] %}
+{% for subj_code in results|map(attribute='code')|list %}
+  {% if subj_code not in seen_subjects %}
+    {% set _ = seen_subjects.append(subj_code) %}
+    {% set subj_results = results|selectattr('code','equalto',subj_code)|list %}
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📖 {{ subj_results[0].subject_name }}</span>
+        <span class="badge badge-gray" style="font-family:var(--mono);">{{ subj_code }}</span>
+        <span class="badge badge-blue" style="margin-left:4px;">{{ subj_results|length }} items</span>
+      </div>
+      <div class="card-body">
+        <div class="material-grid">
+          {% for m in subj_results %}
+          <div class="material-card">
+            <div style="display:inline-block; padding:3px 10px; border-radius:20px; font-size:.72rem; font-weight:600; margin-bottom:8px;
+              background:{% if m.type == 'PDF' %}#fef3c7; color:#92400e{% elif m.type == 'Assignment' %}#f3e8ff; color:#6b21a8{% elif m.type == 'Reference' %}#dcfce7; color:#166534{% else %}#e0f2fe; color:#0369a1{% endif %};">
+              {% if m.type == 'PDF' %}📄{% elif m.type == 'Assignment' %}📝{% elif m.type == 'Reference' %}🔗{% else %}📋{% endif %}
+              {{ m.type }}
+            </div>
+            <div class="mat-title">{{ m.title }}</div>
+            <div class="mat-subj">{{ m.subject_name }}</div>
+            <div style="margin-top:12px; display:flex; gap:8px;">
+              <a href="#" class="btn btn-primary btn-sm">📥 Download</a>
+              <a href="#" class="btn btn-outline btn-sm">👁 Preview</a>
+            </div>
+          </div>
+          {% endfor %}
         </div>
       </div>
-      {% endfor %}
     </div>
-  </div>
-</div>
+  {% endif %}
+{% endfor %}
+
 {% else %}
 <div class="card">
-  <div class="card-body" style="text-align:center; padding:40px;">
-    <div style="font-size:2.5rem; margin-bottom:10px;">🔎</div>
-    <div style="font-weight:600; color:var(--gray-600);">No materials found for "{{ query }}"</div>
-    <div style="font-size:.85rem; color:var(--gray-400); margin-top:6px;">Try a different prefix</div>
+  <div class="card-body" style="text-align:center; padding:50px 20px;">
+    {% if query %}
+    <div style="font-size:3rem; margin-bottom:12px;">🔎</div>
+    <div style="font-weight:600; color:var(--gray-600); font-size:1.05rem;">No results for "{{ query }}"</div>
+    <div style="font-size:.85rem; color:var(--gray-400); margin-top:6px;">Try a different keyword</div>
+    <a href="{{ url_for('materials') }}" class="btn btn-outline" style="margin-top:16px;">Show All Materials</a>
+    {% else %}
+    <div style="font-size:3rem; margin-bottom:12px;">📭</div>
+    <div style="font-weight:600; color:var(--gray-600);">No materials uploaded yet</div>
+    <div style="font-size:.85rem; color:var(--gray-400); margin-top:6px;">Your teacher hasn't added any materials yet</div>
+    {% endif %}
   </div>
 </div>
 {% endif %}
-
-<!-- Trie explanation -->
-<div class="card">
-  <div class="card-header">
-    <span class="card-title">🔤 How the Trie Works</span>
-    <span class="badge badge-blue">Unit 3</span>
-  </div>
-  <div class="card-body">
-    <p style="font-size:.88rem; color:var(--gray-600); line-height:1.7;">
-      A <strong>Trie</strong> stores strings letter by letter in a tree structure.
-      Each path from root to a leaf represents a word. Prefix search traverses down
-      to the prefix node, then collects all words in that subtree using DFS.
-    </p>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:16px;">
-      <div style="background:var(--gray-50); border-radius:10px; padding:14px; text-align:center;">
-        <div style="font-size:1.4rem; font-weight:700; color:var(--blue-mid);">O(L)</div>
-        <div style="font-size:.78rem; color:var(--gray-400);">Insert / Search</div>
-        <div style="font-size:.72rem; color:var(--gray-400);">(L = word length)</div>
-      </div>
-      <div style="background:var(--gray-50); border-radius:10px; padding:14px; text-align:center;">
-        <div style="font-size:1.4rem; font-weight:700; color:var(--green);">O(L+K)</div>
-        <div style="font-size:.78rem; color:var(--gray-400);">Prefix Search</div>
-        <div style="font-size:.72rem; color:var(--gray-400);">(K = results count)</div>
-      </div>
-      <div style="background:var(--gray-50); border-radius:10px; padding:14px; text-align:center;">
-        <div style="font-size:1.4rem; font-weight:700; color:var(--orange);">Autocomplete</div>
-        <div style="font-size:.78rem; color:var(--gray-400);">Use Case</div>
-        <div style="font-size:.72rem; color:var(--gray-400);">Like Google Search</div>
-      </div>
-    </div>
-  </div>
-</div>
 
 {% endblock %}

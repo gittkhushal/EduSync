@@ -628,3 +628,46 @@ input:focus, select:focus, textarea:focus {
   .teacher-grid { grid-template-columns: 1fr; }
   .login-card   { width: 95%; padding: 28px 20px; }
 }
+
+/* ── DS Info Bar ─────────────────────────────────── */
+.ds-info-bar {
+  background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%);
+  color: #e0f2fe;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  animation: fadeInUp .3s ease both;
+}
+.ds-info-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+}
+.ds-info-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.ds-info-inner > div {
+  flex: 1;
+  font-size: .87rem;
+  line-height: 1.55;
+}
+.ds-info-inner strong {
+  color: #bfdbfe;
+}
+.ds-info-close {
+  background: none;
+  border: none;
+  color: #93c5fd;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 4px;
+  flex-shrink: 0;
+  margin-top: -2px;
+}
+.ds-info-close:hover { color: white; }
+.ds-info-toggle {
+  border-color: var(--blue-mid);
+  color: var(--blue-mid);
+}

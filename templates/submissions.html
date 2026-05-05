@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Submissions — {{ assignment.title }}{% endblock %}
+
+{% block content %}
+<div class="page-title">📬 Submissions</div>
+<div class="page-subtitle">{{ assignment.title }} — {{ assignment.subject_name }}</div>
+
+<div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
+  <div class="stat-card green" style="flex:1; min-width:150px;">
+    <div class="stat-icon">✅</div>
+    <div>
+      <div class="stat-value">{{ submissions|length }}</div>
+      <div class="stat-label">Submitted</div>
+    </div>
+  </div>
+  <div class="stat-card orange" style="flex:1; min-width:150px;">
+    <div class="stat-icon">⏳</div>
+    <div>
+      <div class="stat-value">{{ pending_students|length }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+  </div>
+  <div class="stat-card" style="flex:1; min-width:150px;">
+    <div class="stat-icon">📅</div>
+    <div>
+      <div class="stat-value">{{ assignment.days_left }} days</div>
+      <div class="stat-label">Until Deadline</div>
+    </div>
+  </div>
+</div>
+
+<!-- Submitted students -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">✅ Submitted Students ({{ submissions|length }})</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if submissions %}
+    <table>
+      <thead>
+        <tr><th>Roll</th><th>Name</th><th>Submitted At</th><th>Remarks</th></tr>
+      </thead>
+      <tbody>
+        {% for s in submissions %}
+        <tr>
+          <td><span class="badge badge-gray" style="font-family:var(--mono);">{{ s.roll }}</span></td>
+          <td>{{ s.name }}</td>
+          <td style="font-size:.8rem; color:var(--gray-400);">{{ s.submitted_at }}</td>
+          <td style="font-size:.82rem;">{{ s.remarks or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:30px; text-align:center; color:var(--gray-400);">No submissions yet.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Pending students -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">⏳ Pending Students ({{ pending_students|length }})</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    {% if pending_students %}
+    <table>
+      <thead>
+        <tr><th>Roll</th><th>Name</th></tr>
+      </thead>
+      <tbody>
+        {% for s in pending_students %}
+        <tr>
+          <td><span class="badge badge-gray" style="font-family:var(--mono);">{{ s.roll }}</span></td>
+          <td>{{ s.name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:30px; text-align:center; color:var(--green);">🎉 All students have submitted!</div>
+    {% endif %}
+  </div>
+</div>
+
+<div style="margin-top:16px;">
+  <a href="{{ url_for('teacher_dashboard') }}" class="btn btn-outline">← Back to Teacher Panel</a>
+</div>
+{% endblock %}

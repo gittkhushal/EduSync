@@ -5,10 +5,23 @@
 <div class="page-title">📊 Attendance Dashboard</div>
 <div class="page-subtitle">Subject-wise attendance — AY 2025–26 Semester 4</div>
 
-<!-- Skip List DS info -->
-<div class="ds-info" style="margin-bottom:20px;">
-  <strong>Unit 4 — Skip List:</strong> Attendance records stored in O(log n) probabilistic structure.
-  &nbsp;|&nbsp; Your skip-list lookup: Roll 1001 → <strong>{{ skip_pct or 'N/A' }}%</strong>
+<!-- ✨ Algorithm Info Feature -->
+<div class="ds-info-bar" id="ds-info-attendance" style="display:none;">
+  <div class="ds-info-inner">
+    <span class="ds-info-icon">🌲</span>
+    <div>
+      <strong>Powered by Segment Tree</strong> —
+      Your attendance data is stored in a Segment Tree, enabling O(log n) range queries.
+      For example: "average attendance across subjects 1–4" resolves instantly.
+      <span style="opacity:.6; font-size:.8rem; margin-left:8px;">Query: O(log n) · Build: O(n)</span>
+    </div>
+    <button onclick="document.getElementById('ds-info-attendance').style.display='none'" class="ds-info-close">✕</button>
+  </div>
+</div>
+<div style="text-align:right; margin-bottom:10px;">
+  <button class="btn btn-outline btn-sm ds-info-toggle" onclick="document.getElementById('ds-info-attendance').style.display='block'">
+    ⚡ How does this work?
+  </button>
 </div>
 
 <div class="card">
@@ -62,34 +75,6 @@
         {% endfor %}
       </tbody>
     </table>
-  </div>
-</div>
-
-<!-- Segment Tree info -->
-<div class="card">
-  <div class="card-header">
-    <span class="card-title">📐 Segment Tree — Range Queries</span>
-    <span class="badge badge-blue">Unit 5</span>
-  </div>
-  <div class="card-body">
-    <p style="font-size:.88rem; color:var(--gray-600); margin-bottom:12px;">
-      The Segment Tree enables O(log n) range queries on attendance data.
-      Instead of scanning all subjects, we query sub-ranges instantly.
-    </p>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
-      {% set labels = ['AIDS301', 'AIDS302', 'AIDS303', 'AIDS304', 'AIDS305', 'AIDS306'] %}
-      {% for s in subjects %}
-      <div style="background:var(--gray-50); border-radius:10px; padding:14px; text-align:center;">
-        <div style="font-family:var(--mono); font-size:.75rem; color:var(--blue-mid); margin-bottom:4px;">{{ s.code }}</div>
-        <div style="font-size:1.4rem; font-weight:700; color: {{ '#059669' if s.pct >= 75 else '#dc2626' }};">{{ s.pct }}%</div>
-      </div>
-      {% endfor %}
-    </div>
-    <div class="ds-info" style="margin-top:16px;">
-      Segment Tree query — subjects 1 to 3: 
-      Average = <strong>{{ subjects[:3] | map(attribute='pct') | list | sum // 3 if subjects|length >= 3 else 'N/A' }}%</strong>
-      &nbsp;|&nbsp; Time Complexity: O(log n)
-    </div>
   </div>
 </div>
 

@@ -2,17 +2,29 @@
 {% block title %}Assignments{% endblock %}
 
 {% block content %}
-<div class="page-title">📝 Assignments</div>
-<div class="page-subtitle">Sorted by deadline using Fibonacci Heap (Unit 2)</div>
+<div class="page-title">📝 My Assignments</div>
+<div class="page-subtitle">All active assignments — sorted by deadline</div>
 
-<!-- Fibonacci Heap info -->
-<div class="ds-info" style="margin-bottom:20px;">
-  <strong>Unit 2 — Fibonacci Heap:</strong> Assignments sorted by nearest deadline.
-  Insert: O(1) amortized &nbsp;|&nbsp; Extract-Min: O(log n) amortized &nbsp;|&nbsp;
-  Better than Binary Heap for decrease-key operations.
+<!-- ✨ Algorithm Info Feature -->
+<div class="ds-info-bar" id="ds-info-asgn" style="display:none;">
+  <div class="ds-info-inner">
+    <span class="ds-info-icon">🔢</span>
+    <div>
+      <strong>Powered by Fibonacci Heap</strong> —
+      Assignments are prioritised using a Fibonacci Heap so the nearest deadline always surfaces first.
+      Insert runs in O(1); extract-min in O(log n) amortised.
+      <span style="opacity:.6; font-size:.8rem; margin-left:8px;">Insert: O(1) · Extract-min: O(log n)</span>
+    </div>
+    <button onclick="document.getElementById('ds-info-asgn').style.display='none'" class="ds-info-close">✕</button>
+  </div>
 </div>
+<div style="text-align:right; margin-bottom:10px;">
+  <button class="btn btn-outline btn-sm" onclick="document.getElementById('ds-info-asgn').style.display='block'">
+    ⚡ How does this work?
+  </button>
+</div>
+<div class="page-subtitle">View and submit your assignments before the deadline</div>
 
-<!-- Assignment list -->
 <div class="card">
   <div class="card-header">
     <span class="card-title">Pending Assignments</span>
@@ -20,8 +32,9 @@
   </div>
   <div class="card-body">
     {% for a in assignments %}
-    <div class="assignment-card {{ 'urgent-1' if a.days_left <= 1 else ('urgent-2' if a.days_left <= 3 else '') }}">
-      <div>
+    <div class="assignment-card {{ 'urgent-1' if a.days_left <= 1 else ('urgent-2' if a.days_left <= 3 else '') }}"
+         style="display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+      <div style="flex:1;">
         <div class="assign-title">{{ a.title }}</div>
         <div class="assign-meta">
           <span class="badge badge-gray" style="font-family:var(--mono); margin-right:6px;">{{ a.code }}</span>
@@ -31,68 +44,49 @@
         <div style="font-size:.8rem; color:var(--gray-400); margin-top:5px;">{{ a.description }}</div>
         {% endif %}
       </div>
-      <div style="text-align:right; flex-shrink:0;">
-        {% if a.days_left <= 1 %}
+
+      <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0;">
+        <!-- Deadline badge -->
+        {% if a.submitted %}
+          <span class="badge badge-green">✅ Submitted</span>
+        {% elif a.days_left <= 1 %}
           <span class="badge badge-red">🔴 Due Tomorrow</span>
         {% elif a.days_left <= 3 %}
           <span class="badge badge-orange">🟠 {{ a.days_left }} days left</span>
         {% else %}
           <span class="badge badge-green">🟢 {{ a.days_left }} days left</span>
         {% endif %}
+
+        <!-- Submit button / submitted state -->
+        {% if a.submitted %}
+          <span style="font-size:.78rem; color:var(--gray-400);">Already submitted</span>
+        {% else %}
+          <button class="btn btn-sm btn-outline"
+                  onclick="document.getElementById('submit-form-{{ a.id }}').style.display='block'; this.style.display='none';">
+            Submit Assignment ↑
+          </button>
+          <form id="submit-form-{{ a.id }}"
+                method="POST"
+                action="{{ url_for('submit_assignment', aid=a.id) }}"
+                style="display:none; text-align:right;">
+            <textarea name="remarks"
+                      rows="2"
+                      placeholder="Optional remarks (e.g. GitHub link, notes...)"
+                      style="width:220px; font-size:.78rem; padding:6px; border-radius:6px;
+                             border:1px solid var(--gray-200); resize:vertical; margin-bottom:6px;
+                             font-family:inherit;"></textarea>
+            <br>
+            <button type="submit" class="btn btn-primary btn-sm">✅ Confirm Submit</button>
+            <button type="button" class="btn btn-outline btn-sm"
+                    onclick="this.closest('form').style.display='none';
+                             this.closest('div').previousElementSibling.style.display='block';">
+              Cancel
+            </button>
+          </form>
+        {% endif %}
       </div>
     </div>
     {% endfor %}
   </div>
 </div>
-
-<!-- Fibonacci Heap visualization -->
-<div class="card">
-  <div class="card-header">
-    <span class="card-title">⚡ Fibonacci Heap — Priority Order</span>
-    <span class="badge badge-blue">Unit 2</span>
-  </div>
-  <div class="card-body">
-    <p style="font-size:.85rem; color:var(--gray-600); margin-bottom:14px;">
-      The Fibonacci Heap maintains the minimum element (most urgent assignment) 
-      accessible in O(1). The sorted order below is produced via repeated Extract-Min in O(log n) each.
-    </p>
-    <table>
-      <thead>
-        <tr>
-          <th>Priority</th>
-          <th>Assignment</th>
-          <th>Subject Code</th>
-          <th>Days Left</th>
-          <th>Urgency</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in fib_sorted %}
-        <tr>
-          <td><strong>#{{ loop.index }}</strong></td>
-          <td>{{ item.subject }}</td>
-          <td><span class="badge badge-gray" style="font-family:var(--mono);">{{ item.subject_code }}</span></td>
-          <td>{{ item.days }}</td>
-          <td>
-            {% if item.days <= 1 %}
-              <span class="badge badge-red">Critical</span>
-            {% elif item.days <= 3 %}
-              <span class="badge badge-orange">High</span>
-            {% else %}
-              <span class="badge badge-green">Normal</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-
-    <div class="ds-info" style="margin-top:16px;">
-      Fibonacci Heap properties: Min accessible in O(1) &nbsp;|&nbsp;
-      Insert O(1) amortized &nbsp;|&nbsp; Extract-Min O(log n) amortized &nbsp;|&nbsp;
-      Decrease-Key O(1) amortized — better than Binary Heap
-    </div>
-  </div>
-</div>
-
 {% endblock %}

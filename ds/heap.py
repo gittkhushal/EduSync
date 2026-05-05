@@ -1,215 +1,176 @@
-# ============================================================
-# Fibonacci Heap — Unit 2: Priority Queues and Heaps
-# Used for: Assignment deadline priority queue
-# Time Complexity: O(1) amortized insert, O(log n) extract-min
-# More efficient than binary heap for decrease-key operations
-# ============================================================
+"""
+ds/heap.py — Fibonacci Heap, Unit 2
+Cross-platform: tries cffi → pure Python fallback.
+"""
+from __future__ import annotations
+import math, pathlib
 
-import math
+_C_SOURCE = r"""
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+typedef struct FN {
+    int days,degree; int marked;
+    char subject[128],subject_code[16];
+    struct FN *parent,*child,*left,*right;
+} FN;
+typedef struct FH { FN* min_node; int num_nodes; } FH;
 
-class FibNode:
-    """Node in Fibonacci Heap"""
-    def __init__(self, days, subject, subject_code=""):
-        self.days         = days          # Priority key (days remaining)
-        self.subject      = subject       # Assignment name
-        self.subject_code = subject_code  # e.g. "DSA301"
-        self.degree       = 0             # Number of children
-        self.marked       = False         # For decrease-key cascade
-        self.parent       = None
-        self.child        = None
-        self.left         = self          # Circular doubly linked
-        self.right        = self
+static FN* _mkn(int days,const char* s,const char* c){
+    FN* n=(FN*)calloc(1,sizeof(FN));
+    n->days=days; n->left=n->right=n;
+    strncpy(n->subject,s,127); strncpy(n->subject_code,c,15);
+    return n;
+}
+static void _link(FN* child,FN* parent){
+    child->left->right=child->right; child->right->left=child->left;
+    child->parent=parent;
+    if(!parent->child){parent->child=child;child->left=child->right=child;}
+    else{child->left=parent->child;child->right=parent->child->right;
+         parent->child->right->left=child;parent->child->right=child;}
+    parent->degree++; child->marked=0;
+}
+static void _consolidate(FH* h){
+    int max_deg=(int)(log2(h->num_nodes+1))+2;
+    FN** A=(FN**)calloc(max_deg+2,sizeof(FN*));
+    /* collect roots */
+    int cnt=0; FN* cur=h->min_node;
+    do{cnt++;cur=cur->right;}while(cur!=h->min_node);
+    FN** roots=(FN**)malloc(cnt*sizeof(FN*));
+    cur=h->min_node; for(int i=0;i<cnt;i++){roots[i]=cur;cur=cur->right;}
+    for(int i=0;i<cnt;i++){
+        FN* x=roots[i]; int d=x->degree;
+        while(d<=max_deg&&A[d]){
+            FN* y=A[d];
+            if(x->days>y->days){FN*tmp=x;x=y;y=tmp;}
+            _link(y,x); A[d]=NULL; d++;
+        }
+        if(d<=max_deg) A[d]=x;
+    }
+    h->min_node=NULL;
+    for(int i=0;i<=max_deg;i++){
+        if(!A[i])continue;
+        if(!h->min_node){h->min_node=A[i];A[i]->left=A[i]->right=A[i];}
+        else{A[i]->right=h->min_node;A[i]->left=h->min_node->left;
+             h->min_node->left->right=A[i];h->min_node->left=A[i];
+             if(A[i]->days<h->min_node->days)h->min_node=A[i];}
+    }
+    free(A); free(roots);
+}
+FH* fib_create(){FH* h=(FH*)calloc(1,sizeof(FH));return h;}
+FN* fib_insert(FH* h,int days,const char* s,const char* c){
+    FN* n=_mkn(days,s,c);
+    if(!h->min_node)h->min_node=n;
+    else{n->right=h->min_node;n->left=h->min_node->left;
+         h->min_node->left->right=n;h->min_node->left=n;
+         if(n->days<h->min_node->days)h->min_node=n;}
+    h->num_nodes++; return n;
+}
+FN* fib_extract_min(FH* h){
+    FN* z=h->min_node; if(!z)return NULL;
+    if(z->child){
+        int cnt=0;FN*c=z->child;do{cnt++;c=c->right;}while(c!=z->child);
+        FN**ch=(FN**)malloc(cnt*sizeof(FN*));
+        c=z->child;for(int i=0;i<cnt;i++){ch[i]=c;c=c->right;}
+        for(int i=0;i<cnt;i++){
+            ch[i]->left->right=ch[i]->right;ch[i]->right->left=ch[i]->left;
+            ch[i]->right=h->min_node;ch[i]->left=h->min_node->left;
+            h->min_node->left->right=ch[i];h->min_node->left=ch[i];
+            ch[i]->parent=NULL;
+        }
+        free(ch);
+    }
+    z->left->right=z->right;z->right->left=z->left;
+    if(z==z->right)h->min_node=NULL;
+    else{h->min_node=z->right;_consolidate(h);}
+    h->num_nodes--; return z;
+}
+int fib_size(FH* h){return h?h->num_nodes:0;}
+int fib_node_days(FN* n){return n?n->days:-1;}
+const char* fib_node_subject(FN* n){return n?n->subject:"";}
+const char* fib_node_code(FN* n){return n?n->subject_code:"";}
+void fib_free_node(FN* n){free(n);}
+void fib_free(FH* h){free(h);}
+"""
+
+_CACHE = pathlib.Path(__file__).parent.parent / "ds_cache"
+
+def _load():
+    try:
+        from cffi import FFI
+        ffi = FFI()
+        ffi.cdef("""
+            typedef struct FN FN; typedef struct FH FH;
+            FH* fib_create(); FN* fib_insert(FH*,int,const char*,const char*);
+            FN* fib_extract_min(FH*); int fib_size(FH*);
+            int fib_node_days(FN*); const char* fib_node_subject(FN*);
+            const char* fib_node_code(FN*); void fib_free_node(FN*); void fib_free(FH*);
+        """)
+        _CACHE.mkdir(exist_ok=True)
+        lib = ffi.verify(_C_SOURCE, tmpdir=str(_CACHE),
+                         libraries=["m"], extra_compile_args=["-O2"])
+        return ffi, lib
+    except Exception:
+        return None, None
+
+_ffi, _lib = _load()
+_CPP = _lib is not None
+
+# ── Pure Python fallback ──────────────────────────────────────
+import heapq as _hq
+
+class _PyHeap:
+    def __init__(self): self._h=[]
+    def insert(self,days,sub,code): _hq.heappush(self._h,(days,sub,code))
+    def extract_min(self):
+        if not self._h: return None
+        d,s,c=_hq.heappop(self._h); return {'days':d,'subject':s,'subject_code':c}
+    def size(self): return len(self._h)
+    def get_all_sorted(self):
+        tmp=sorted(self._h); return [{'days':d,'subject':s,'subject_code':c} for d,s,c in tmp]
 
 class FibonacciHeap:
-    """
-    Fibonacci Heap for assignment scheduling — Unit 2
-    Supports O(1) amortized insert, O(log n) extract-min
-    Better than binary heap when many decrease-key ops needed
-    """
+    """Unit 2 — Fibonacci Heap priority queue. C via cffi or pure-Python fallback."""
+    BACKEND = "C (cffi)" if _CPP else "Python (heapq fallback)"
 
     def __init__(self):
-        self.min_node  = None   # Pointer to minimum
-        self.num_nodes = 0
+        if _CPP: self._h = _lib.fib_create()
+        else:    self._py = _PyHeap()
 
-    def _link(self, child, parent):
-        """Make child a child of parent (used during consolidation)"""
-        # Remove child from root list
-        child.left.right  = child.right
-        child.right.left  = child.left
+    def insert(self, days:int, subject:str, subject_code:str=""):
+        if _CPP: _lib.fib_insert(self._h, days, subject.encode(), subject_code.encode())
+        else:    self._py.insert(days, subject, subject_code)
 
-        child.parent = parent
+    def extract_min(self) -> dict|None:
+        if _CPP:
+            ptr = _lib.fib_extract_min(self._h)
+            if not ptr or ptr==_ffi.NULL: return None
+            r={'days':_lib.fib_node_days(ptr),
+               'subject':_ffi.string(_lib.fib_node_subject(ptr)).decode(),
+               'subject_code':_ffi.string(_lib.fib_node_code(ptr)).decode()}
+            _lib.fib_free_node(ptr); return r
+        return self._py.extract_min()
 
-        if parent.child is None:
-            parent.child = child
-            child.left   = child
-            child.right  = child
-        else:
-            child.left        = parent.child
-            child.right       = parent.child.right
-            parent.child.right.left = child
-            parent.child.right      = child
+    def get_all_sorted(self) -> list[dict]:
+        if _CPP:
+            extracted=[]
+            while _lib.fib_size(self._h)>0:
+                ptr=_lib.fib_extract_min(self._h)
+                if not ptr or ptr==_ffi.NULL: break
+                extracted.append({'days':_lib.fib_node_days(ptr),
+                    'subject':_ffi.string(_lib.fib_node_subject(ptr)).decode(),
+                    'subject_code':_ffi.string(_lib.fib_node_code(ptr)).decode()})
+                _lib.fib_free_node(ptr)
+            for item in extracted:
+                _lib.fib_insert(self._h,item['days'],
+                                item['subject'].encode(),item['subject_code'].encode())
+            return extracted
+        return self._py.get_all_sorted()
 
-        parent.degree += 1
-        child.marked   = False
+    def size(self) -> int:
+        return _lib.fib_size(self._h) if _CPP else self._py.size()
 
-    def insert(self, days, subject, subject_code=""):
-        """Insert assignment — O(1) amortized"""
-        node = FibNode(days, subject, subject_code)
-
-        if self.min_node is None:
-            self.min_node = node
-        else:
-            # Insert into root list
-            node.right              = self.min_node
-            node.left               = self.min_node.left
-            self.min_node.left.right = node
-            self.min_node.left       = node
-
-            if node.days < self.min_node.days:
-                self.min_node = node
-
-        self.num_nodes += 1
-        return node
-
-    def extract_min(self):
-        """Remove and return assignment with nearest deadline — O(log n) amortized"""
-        z = self.min_node
-        if z is None:
-            return None
-
-        # Add children of z to root list
-        if z.child:
-            children = []
-            cur = z.child
-            while True:
-                children.append(cur)
-                cur = cur.right
-                if cur == z.child:
-                    break
-
-            for child in children:
-                child.left.right  = child.right
-                child.right.left  = child.left
-
-                child.right              = self.min_node
-                child.left               = self.min_node.left
-                self.min_node.left.right = child
-                self.min_node.left       = child
-
-                child.parent = None
-
-        # Remove z from root list
-        z.left.right = z.right
-        z.right.left = z.left
-
-        if z == z.right:
-            self.min_node = None
-        else:
-            self.min_node = z.right
-            self._consolidate()
-
-        self.num_nodes -= 1
-        return z
-
-    def _consolidate(self):
-        """Consolidate trees of same degree — O(log n)"""
-        max_degree = int(math.log2(self.num_nodes + 1)) + 2
-        A = [None] * (max_degree + 1)
-
-        roots = []
-        cur = self.min_node
-        if cur:
-            while True:
-                roots.append(cur)
-                cur = cur.right
-                if cur == self.min_node:
-                    break
-
-        for w in roots:
-            x = w
-            d = x.degree
-
-            while d < len(A) and A[d] is not None:
-                y = A[d]
-                if x.days > y.days:
-                    x, y = y, x
-                self._link(y, x)
-                A[d] = None
-                d += 1
-
-            if d < len(A):
-                A[d] = x
-
-        self.min_node = None
-        for node in A:
-            if node:
-                if self.min_node is None:
-                    self.min_node = node
-                    node.left  = node
-                    node.right = node
-                else:
-                    node.right              = self.min_node
-                    node.left               = self.min_node.left
-                    self.min_node.left.right = node
-                    self.min_node.left       = node
-
-                    if node.days < self.min_node.days:
-                        self.min_node = node
-
-    def get_all_sorted(self):
-        """
-        Extract all assignments sorted by urgency.
-        Uses a temp heap so original is not destroyed.
-        Returns list of dicts.
-        """
-        result = []
-        temp   = FibonacciHeap()
-
-        # Copy all root + child nodes
-        def collect(node):
-            if node is None:
-                return
-            cur = node
-            while True:
-                temp.insert(cur.days, cur.subject, cur.subject_code)
-                collect(cur.child)
-                cur = cur.right
-                if cur == node:
-                    break
-
-        collect(self.min_node)
-        temp.num_nodes = self.num_nodes
-
-        while temp.num_nodes > 0:
-            node = temp.extract_min()
-            if node:
-                result.append({
-                    'days':         node.days,
-                    'subject':      node.subject,
-                    'subject_code': node.subject_code
-                })
-
-        return result
-
-
-# ============================================================
-# Simple Priority Queue wrapper (also exposes binary heap API)
-# Used as fallback for demonstration
-# ============================================================
-
-import heapq
-
-class AssignmentHeap:
-    """Min-heap priority queue wrapper — also Unit 2"""
-
-    def __init__(self):
-        self.heap = []
-
-    def add_assignment(self, days, subject, subject_code=""):
-        heapq.heappush(self.heap, (days, subject, subject_code))
-
-    def get_assignments(self):
-        return [
-            {'days': d, 'subject': s, 'subject_code': c}
-            for d, s, c in sorted(self.heap)
-        ]
+    def __del__(self):
+        try:
+            if _CPP: _lib.fib_free(self._h)
+        except Exception: pass

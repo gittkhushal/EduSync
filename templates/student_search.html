@@ -2,15 +2,28 @@
 {% block title %}Student Search{% endblock %}
 
 {% block content %}
-<div class="page-title">🔍 Student Record Search</div>
-<div class="page-subtitle">AVL Tree — O(log n) search by roll number — Unit 1</div>
+<div class="page-title">🔍 Student Search</div>
+<div class="page-subtitle">Look up any student by roll number</div>
 
-<div class="ds-info" style="margin-bottom:20px;">
-  <strong>Unit 1 — AVL Tree:</strong> All student records stored in a self-balancing BST.
-  Search, Insert, Delete: O(log n) guaranteed. Height never exceeds 1.44 log₂(n).
+<!-- Algorithm Info Feature -->
+<div class="ds-info-bar" id="ds-info-search" style="display:none;">
+  <div class="ds-info-inner">
+    <span class="ds-info-icon">⚖️</span>
+    <div>
+      <strong>Powered by AVL Tree</strong> —
+      All student records are indexed in a self-balancing AVL Tree keyed by roll number.
+      This guarantees O(log n) search even with thousands of students — no matter the insertion order.
+      <span style="opacity:.6; font-size:.8rem; margin-left:8px;">Search/Insert/Delete: O(log n)</span>
+    </div>
+    <button onclick="document.getElementById('ds-info-search').style.display='none'" class="ds-info-close">✕</button>
+  </div>
+</div>
+<div style="text-align:right; margin-bottom:10px;">
+  <button class="btn btn-outline btn-sm" onclick="document.getElementById('ds-info-search').style.display='block'">
+    ⚡ How does this work?
+  </button>
 </div>
 
-<!-- Search form -->
 <div class="card">
   <div class="card-header">
     <span class="card-title">Search by Roll Number</span>
@@ -18,45 +31,42 @@
   <div class="card-body">
     <form method="GET" action="{{ url_for('student_search') }}">
       <div class="search-row">
-        <input type="text" name="roll" placeholder="Enter roll number (e.g. 1001, 1002, 1003)"
-               value="{{ roll }}">
-        <button type="submit" class="btn btn-primary">🌳 AVL Search</button>
+        <input type="text" name="roll" placeholder="Enter roll number (e.g. 1001)" value="{{ roll }}" autofocus>
+        <button type="submit" class="btn btn-primary">Search</button>
       </div>
     </form>
-
-    {% if roll %}
-    <div style="margin-top:16px;">
-      {% if found %}
-      <div style="background:#d1fae5; border-radius:10px; padding:16px; border-left:4px solid var(--green);">
-        <div style="font-weight:700; color:var(--green); margin-bottom:8px;">✅ Student Found — O(log n) lookup</div>
-        <table style="width:auto;">
-          <tr><td style="padding:4px 16px 4px 0; color:var(--gray-400); font-size:.85rem;">Roll Number</td>
-              <td><strong style="font-family:var(--mono);">{{ found.roll }}</strong></td></tr>
-          <tr><td style="padding:4px 16px 4px 0; color:var(--gray-400); font-size:.85rem;">Name</td>
-              <td><strong>{{ found.name }}</strong></td></tr>
-          <tr><td style="padding:4px 16px 4px 0; color:var(--gray-400); font-size:.85rem;">Department</td>
-              <td>{{ found.dept }}</td></tr>
-          <tr><td style="padding:4px 16px 4px 0; color:var(--gray-400); font-size:.85rem;">Year</td>
-              <td>{{ found.year }}</td></tr>
-        </table>
-      </div>
-      {% else %}
-      <div style="background:#fee2e2; border-radius:10px; padding:14px; border-left:4px solid var(--red);">
-        <strong style="color:var(--red);">❌ Student with roll {{ roll }} not found in AVL Tree</strong>
-      </div>
-      {% endif %}
-    </div>
-    {% endif %}
   </div>
 </div>
 
-<!-- All students (inorder = sorted) -->
+{% if found %}
 <div class="card">
   <div class="card-header">
-    <span class="card-title">All Students — Inorder Traversal (Sorted)</span>
-    <span class="badge badge-blue">{{ all_students|length }} students</span>
+    <span class="card-title">Student Found</span>
+    <span class="badge badge-green">✅ Found</span>
   </div>
-  <div class="card-body" style="padding:0;">
+  <div class="card-body">
+    <table>
+      <tr><th>Roll</th><td>{{ found.roll }}</td></tr>
+      <tr><th>Name</th><td>{{ found.name }}</td></tr>
+      <tr><th>Department</th><td>{{ found.dept }}</td></tr>
+      <tr><th>Year</th><td>{{ found.year }}</td></tr>
+    </table>
+  </div>
+</div>
+{% elif roll %}
+<div class="card">
+  <div class="card-body" style="text-align:center; padding:30px; color:var(--gray-400);">
+    No student found with roll number {{ roll }}.
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">All Students</span>
+    <span class="badge badge-blue">{{ all_students|length }} total</span>
+  </div>
+  <div class="card-body" style="padding:0; max-height:350px; overflow-y:auto;">
     <table>
       <thead>
         <tr><th>Roll</th><th>Name</th><th>Department</th><th>Year</th></tr>
@@ -65,7 +75,7 @@
         {% for s in all_students %}
         <tr>
           <td><span class="badge badge-gray" style="font-family:var(--mono);">{{ s.roll }}</span></td>
-          <td><strong>{{ s.name }}</strong></td>
+          <td>{{ s.name }}</td>
           <td>{{ s.dept }}</td>
           <td>Year {{ s.year }}</td>
         </tr>

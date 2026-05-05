@@ -28,6 +28,13 @@
       <div class="stat-label">Study Materials</div>
     </div>
   </div>
+  <div class="stat-card green" style="cursor:pointer;" onclick="window.location='{{ url_for('teacher_attendance') }}'">
+    <div class="stat-icon">✅</div>
+    <div>
+      <div class="stat-value" style="font-size:1.1rem;">Mark</div>
+      <div class="stat-label">Attendance →</div>
+    </div>
+  </div>
 </div>
 
 <div class="teacher-grid">
@@ -36,7 +43,6 @@
   <div class="card">
     <div class="card-header">
       <span class="card-title">➕ Add Assignment</span>
-      <span class="badge badge-orange">Fibonacci Heap</span>
     </div>
     <div class="card-body">
       <form method="POST" action="{{ url_for('add_assignment') }}">
@@ -54,7 +60,7 @@
         </div>
         <div class="form-group">
           <label>Description</label>
-          <textarea name="description" rows="2" placeholder="Brief description..."></textarea>
+          <textarea name="description" rows="2" placeholder="Brief description for students..."></textarea>
         </div>
         <div class="form-group">
           <label>Days Until Deadline</label>
@@ -62,9 +68,6 @@
         </div>
         <button type="submit" class="btn btn-primary">Add Assignment</button>
       </form>
-      <div class="ds-info" style="margin-top:12px;">
-        Assignment is inserted into Fibonacci Heap with O(1) amortized insert
-      </div>
     </div>
   </div>
 
@@ -72,7 +75,6 @@
   <div class="card">
     <div class="card-header">
       <span class="card-title">📎 Add Study Material</span>
-      <span class="badge badge-green">Trie Insert</span>
     </div>
     <div class="card-body">
       <form method="POST" action="{{ url_for('add_material') }}">
@@ -99,38 +101,91 @@
         </div>
         <button type="submit" class="btn btn-success">Upload Material</button>
       </form>
-      <div class="ds-info" style="margin-top:12px;">
-        Title is inserted into Trie for instant prefix search by students
-      </div>
     </div>
   </div>
 
 </div>
 
-<!-- Assignments table -->
+<!-- Assignments table with submission counts -->
 <div class="card">
   <div class="card-header">
     <span class="card-title">📋 All Assignments</span>
+    <span class="badge badge-blue">Click "View Submissions" to see who submitted</span>
   </div>
   <div class="card-body" style="padding:0;">
     <table>
       <thead>
-        <tr><th>Assignment</th><th>Subject</th><th>Days Left</th><th>Status</th></tr>
+        <tr>
+          <th>Assignment</th>
+          <th>Subject</th>
+          <th>Deadline</th>
+          <th>Submissions</th>
+          <th>Actions</th>
+        </tr>
       </thead>
       <tbody>
         {% for a in assignments %}
         <tr>
-          <td><strong>{{ a.title }}</strong></td>
+          <td>
+            <strong>{{ a.title }}</strong>
+            {% if a.description %}
+            <div style="font-size:.75rem; color:var(--gray-400);">{{ a.description[:60] }}{% if a.description|length > 60 %}...{% endif %}</div>
+            {% endif %}
+          </td>
           <td><span class="badge badge-gray">{{ a.subject_name }}</span></td>
-          <td>{{ a.days_left }}</td>
           <td>
             {% if a.days_left <= 1 %}
-              <span class="badge badge-red">Critical</span>
+              <span class="badge badge-red">Due Tomorrow</span>
             {% elif a.days_left <= 3 %}
-              <span class="badge badge-orange">Urgent</span>
+              <span class="badge badge-orange">{{ a.days_left }} days</span>
             {% else %}
-              <span class="badge badge-green">Normal</span>
+              <span class="badge badge-green">{{ a.days_left }} days</span>
             {% endif %}
+          </td>
+          <td>
+            <strong style="color:var(--blue-mid);">{{ a.submission_count }}</strong>
+            <span style="color:var(--gray-400); font-size:.8rem;"> / {{ total_students }}</span>
+          </td>
+          <td style="display:flex; gap:6px; flex-wrap:wrap;">
+            <a href="{{ url_for('view_submissions', aid=a.id) }}"
+               class="btn btn-outline btn-sm">👁 View Submissions</a>
+            <form method="POST" action="{{ url_for('delete_assignment', aid=a.id) }}"
+                  onsubmit="return confirm('Delete this assignment?');" style="display:inline;">
+              <button type="submit" class="btn btn-sm" style="background:var(--red); color:white; border:none;">🗑 Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Students overview -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">👨‍🎓 Student Submission Overview</span>
+    <span class="badge badge-blue">{{ total_students }} students</span>
+  </div>
+  <div class="card-body" style="padding:0; max-height:400px; overflow-y:auto;">
+    <table>
+      <thead>
+        <tr><th>Roll</th><th>Name</th><th>Submitted</th><th>Progress</th></tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td><span class="badge badge-gray" style="font-family:var(--mono);">{{ s.roll }}</span></td>
+          <td>{{ s.name }}</td>
+          <td>
+            <strong>{{ s.submitted }}</strong>
+            <span style="color:var(--gray-400);"> / {{ s.total }}</span>
+          </td>
+          <td>
+            <div class="progress-bar-wrap" style="min-width:100px;">
+              <div class="progress-bar safe"
+                   style="width:{{ ((s.submitted / s.total) * 100) | int if s.total > 0 else 0 }}%;"></div>
+            </div>
           </td>
         </tr>
         {% endfor %}

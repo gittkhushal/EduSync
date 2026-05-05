@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Mark Attendance{% endblock %}
+
+{% block content %}
+<div class="page-title">✅ Mark Attendance</div>
+<div class="page-subtitle">Select a subject and mark today's attendance for all students</div>
+
+<!-- Subject Selector -->
+<div class="card">
+  <div class="card-header">
+    <span class="card-title">📋 Select Subject</span>
+  </div>
+  <div class="card-body">
+    <form method="GET" action="{{ url_for('teacher_attendance') }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+      <div class="form-group" style="flex:1; min-width:220px; margin-bottom:0;">
+        <label>Subject</label>
+        <select name="subject_id" required onchange="this.form.submit()">
+          <option value="">— Select a subject —</option>
+          {% for s in subjects %}
+          <option value="{{ s.id }}" {% if selected_subject == s.id %}selected{% endif %}>
+            {{ s.code }} — {{ s.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if selected_subject and records %}
+<form method="POST" action="{{ url_for('mark_attendance') }}">
+  <input type="hidden" name="subject_id" value="{{ selected_subject }}">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">👨‍🎓 Mark Attendance</span>
+      <span class="badge badge-blue">{{ records|length }} students</span>
+      <div style="margin-left:auto; display:flex; gap:8px;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="markAll('present')">✅ Mark All Present</button>
+        <button type="button" class="btn btn-outline btn-sm" onclick="markAll('absent')">❌ Mark All Absent</button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:0; max-height:500px; overflow-y:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Roll</th>
+            <th>Name</th>
+            <th>Conducted</th>
+            <th>Attended</th>
+            <th>Current %</th>
+            <th>Today's Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          {% set pct = (r.attended / r.conducted * 100)|round(1) if r.conducted > 0 else 0 %}
+          <tr>
+            <td><span class="badge badge-gray" style="font-family:var(--mono);">{{ r.roll }}</span></td>
+            <td><strong>{{ r.name }}</strong></td>
+            <td>{{ r.conducted }}</td>
+            <td>{{ r.attended }}</td>
+            <td>
+              <strong style="color:{{ '#059669' if pct >= 75 else '#dc2626' }};">{{ pct }}%</strong>
+            </td>
+            <td>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:.88rem;">
+                  <input type="radio" name="status_{{ r.roll }}" value="present" checked
+                         style="accent-color:#059669;">
+                  <span style="color:#059669; font-weight:600;">✅ Present</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:5px; cursor:pointer; font-size:.88rem;">
+                  <input type="radio" name="status_{{ r.roll }}" value="absent"
+                         style="accent-color:#dc2626;">
+                  <span style="color:#dc2626; font-weight:600;">❌ Absent</span>
+                </label>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-body" style="border-top:1px solid var(--border); padding-top:16px;">
+      <button type="submit" class="btn btn-primary" style="padding:12px 28px; font-size:1rem;"
+              onclick="return confirm('Submit attendance for all students? This cannot be undone.');">
+        ✅ Submit Attendance
+      </button>
+      <span style="font-size:.8rem; color:var(--gray-400); margin-left:12px;">
+        This will add +1 to conducted for every student, and +1 to attended for those marked Present.
+      </span>
+    </div>
+  </div>
+</form>
+
+<script>
+function markAll(status) {
+  document.querySelectorAll('input[type="radio"][value="' + status + '"]').forEach(r => r.checked = true);
+}
+</script>
+
+{% elif selected_subject %}
+<div class="card">
+  <div class="card-body" style="text-align:center; padding:40px;">
+    <div style="font-size:2rem; margin-bottom:10px;">📭</div>
+    <div style="font-weight:600; color:var(--gray-600);">No students found</div>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="card-body" style="text-align:center; padding:50px 20px;">
+    <div style="font-size:3rem; margin-bottom:14px;">📋</div>
+    <div style="font-weight:600; color:var(--gray-600); font-size:1.05rem;">Select a subject above to begin marking attendance</div>
+    <div style="font-size:.85rem; color:var(--gray-400); margin-top:6px;">All students will appear once a subject is selected</div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
